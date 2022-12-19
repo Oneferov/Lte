@@ -49,7 +49,8 @@
             <livewire:styles />
         @endif
     @endif
-
+    
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     {{-- Custom Stylesheets (post AdminLTE) --}}
     @yield('adminlte_css')
 

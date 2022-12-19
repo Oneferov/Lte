@@ -9,15 +9,15 @@
 @section('content')
     <div class="container">
         <h2>Laravel DataTables Tutorial Example</h2>
-    <table class="table table-bordered" id="table">
-        <thead>
-        <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Email</th>
-        </tr>
-        </thead>
-    </table>
+        <table class="table table-bordered" id="table">
+            <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
+            </thead>
+        </table>
     </div>
     <script>
         $(function() {
@@ -25,7 +25,7 @@
             $('#table').DataTable({
             processing: true,
             serverSide: true,
-            ajax: '{{ url('admin/routes/list') }}',
+            ajax: '{{ route('route.list') }}',
             columns: [
                     { data: 'id', name: 'id' },
                     { data: 'name', name: 'name' },

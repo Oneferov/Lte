@@ -313,26 +313,32 @@ return [
         ],
         [
             'text'        => 'pages',
-            'url'         => 'admin/pages',
+            'url'         => 'pages',
             'icon'        => 'far fa-fw fa-file',
             'label'       => 4,
             'label_color' => 'success',
         ],
         [
             'text'        => 'Routes',
-            'url'         => 'admin/routes',
+            'url'         => 'routes',
+            'icon'        => 'fas fa-route',
+            'label_color' => 'success',
+        ],
+        [
+            'text'        => 'Files',
+            'url'         => 'files',
             'icon'        => 'fas fa-route',
             'label_color' => 'success',
         ],
         ['header' => 'account_settings'],
         [
             'text' => 'profile',
-            'url'  => 'admin/settings',
+            'url'  => 'settings',
             'icon' => 'fas fa-fw fa-user',
         ],
         [
             'text' => 'change_password',
-            'url'  => 'admin/settings',
+            'url'  => 'settings',
             'icon' => 'fas fa-fw fa-lock',
         ],
         [

@@ -1,0 +1,17 @@
+body {
+    font-family: "Trebuchet MS";
+    font-size: 18px;
+}
+
+.content-wrapper>.content,
+.content-header {
+    padding: 2rem;
+}
+
+.content-wrapper {
+    background-image: url('../../public/images/123123.jpeg');
+}
+
+.main-header {
+    background-color: var(--color-my-black);
+}

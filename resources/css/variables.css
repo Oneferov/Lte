@@ -1,0 +1,5 @@
+:root {
+    --color-my-black: rgb(33, 33, 33);
+    --border-my-radius: 5px;
+    --border-my: 4px solid  var(--color-my-black);
+  }

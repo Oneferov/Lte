@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\Admin\RouteController;
+use App\Http\Controllers\RouteController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,16 +17,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::controller(RouteController::class)->group(function () {
+    Route::get('routes', 'index');
+    Route::get('routes/list', 'list')->name('route.list');
 });
 
-Route::group(['prefix' => 'admin'], function () {
-    Route::get('', AdminController::class);
-
-    Route::group(['prefix' => 'routes'], function () {
-        Route::get('', [RouteController::class, 'index']);
-        Route::get('list', [RouteController::class, 'list']);
-    });
-   
+Route::controller(FileController::class)->group(function () {
+    Route::get('files', 'index')->name('file.index');
+    Route::post('files/show', 'show')->name('file.show');
+    Route::post('files/save', 'save')->name('file.save');
 });
+
+Route::get('', AdminController::class);
+

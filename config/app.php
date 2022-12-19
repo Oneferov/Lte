@@ -196,7 +196,7 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         Yajra\Datatables\DatatablesServiceProvider::class,
-
+        Collective\Html\HtmlServiceProvider::class,
     ],
 
     /*
