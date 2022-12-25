@@ -15,3 +15,7 @@ body {
 .main-header {
     background-color: var(--color-my-black);
 }
+
+.navbar-nav {
+    margin-left: 0 !important;
+}
