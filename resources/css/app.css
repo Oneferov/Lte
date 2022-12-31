@@ -19,3 +19,39 @@ body {
 .navbar-nav {
     margin-left: 0 !important;
 }
+
+.main-header ul:nth-child(2) {
+    flex: 1 0 auto;
+}
+
+.header__block {
+    flex: 1 0 auto;
+}
+.header__console {
+    color: #98d43d;
+    position: relative;
+}
+
+.header__label {
+    position: absolute;
+    left: .5rem;
+    bottom: 2.3rem;
+}
+
+.header__info {
+    display: none;
+    height: 20rem;
+    padding-bottom: 0.5rem;
+    background-color: var(--color-my-black);
+    border-radius: 8px;
+    overflow: scroll;
+}
+
+#console {
+    min-width: 100%;
+    background: black;
+    color: #98d43d;
+    outline: none;
+    padding-left: 0.5rem;
+    border-radius: 8px;
+}

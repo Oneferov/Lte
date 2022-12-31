@@ -14,47 +14,39 @@
               codeEnter = 13,
               codeUp = 38,
               codeDown = 40,
+              tab = 9,
               keyFirstCommand = 'command_',
               currentNumKey = 'currentNum',
               maxNumKey = 'maxNum',
               keyCurrentFolder = 'currentFolder',
               keyCurrentComand = 'currentComand',
               keyLevelFolder = 'levelFolder',
-              info = $('.header__info')
+              info = $('.header__info'),
+              consoleStr= $('#console')
 
         $(function() {
             changeLabel(sessionStorage.getItem(keyCurrentFolder) ?? changeOutputFolder())
+
+            $('#console').on('click', function () {
+                info.slideDown(500)
+            })
 
             $('#console').keydown(function(e) {
                 if(e.keyCode === codeEnter) {
 
                     if ($(this).val() == 'clear') {
                         $('.header__info').empty()
-                    }
-
-                    if ($(this).val() == 'cd ..') {
-                        sessionStorage.setItem(keyLevelFolder, +sessionStorage.getItem(keyLevelFolder) + 1)
-                        sessionStorage.setItem(keyCurrentComand, sessionStorage.getItem(keyCurrentComand) ? sessionStorage.getItem(keyCurrentComand) + 'cd .. && ' : 'cd .. && ')
-                        changeOutputFolder()
-                    }
-
-                    if ($(this).val().includes('cd ') && !$(this).val().includes('..')) {
-
-                        let newpath = $(this).val().split(' ')[1]
-                        if (newpath.split('/').length > 1) {
-                            sessionStorage.setItem(keyLevelFolder, +sessionStorage.getItem(keyLevelFolder) - newpath.split('/').length)
-                        } else {
-                            sessionStorage.setItem(keyLevelFolder, +sessionStorage.getItem(keyLevelFolder) - 1)
-                        }
-                        changeLabel(sessionStorage.getItem(keyCurrentFolder) + '/' + newpath)
-                        sessionStorage.setItem(keyCurrentFolder, sessionStorage.getItem(keyCurrentFolder) + '/' + newpath)
-                        sessionStorage.setItem(keyCurrentComand, sessionStorage.getItem(keyCurrentComand) ? sessionStorage.getItem(keyCurrentComand) : `cd ${newpath} && `)
-                    }
-                    
-                        setLocalStorage($(this).val())
-
-                        sendCommand(sessionStorage.getItem(keyCurrentComand) ? sessionStorage.getItem(keyCurrentComand) + $(this).val() : $(this).val())
                         $(this).val('')
+                    } else {
+                        if ($(this).val() == 'cd ..') {
+                            sessionStorage.setItem(keyLevelFolder, +sessionStorage.getItem(keyLevelFolder) + 1)
+                            sessionStorage.setItem(keyCurrentComand, sessionStorage.getItem(keyCurrentComand) ? sessionStorage.getItem(keyCurrentComand) + 'cd .. && ' : 'cd .. && ')
+                            changeOutputFolder()
+                        }
+
+                        setLocalStorage($(this).val())
+                        sendCommand(sessionStorage.getItem(keyCurrentComand) ? sessionStorage.getItem(keyCurrentComand) + $(this).val() : $(this).val())
+                    }
                 }
 
                 if (localStorage.getItem(maxNumKey)) {
@@ -76,10 +68,15 @@
                         }
                     }
                 }
+
+                if ($(this).val() != '' && e.keyCode === tab) {
+                    e.preventDefault()
+                    getLs(sessionStorage.getItem(keyCurrentFolder), 'tab') 
+                }
             });
         });
 
-        function getLs(path) {
+        function getLs(path, value = null) {
             $.ajax({
                 url: '{{ route('console.ls') }}',
                 type: "POST",
@@ -88,10 +85,25 @@
                     path
                 },
                 success:function(response){
-                    changeInfoWithLs(response)
+                    if (value) {
+                        changeConsoleWithTab(response)
+                    } else {
+                        changeInfoWithLs(response)
+                    }
                 },
                 error: function (error) {
 
+                }
+            });
+        }
+
+        function changeConsoleWithTab(response) {
+            let arrValue = consoleStr.val().split(' ')
+            let value = arrValue[arrValue.length - 1]
+            response.folders.concat(response.files).forEach(element => {
+                if (element.startsWith(value)) {
+                    arrValue[arrValue.length - 1] = element
+                    consoleStr.val(arrValue.join(' '))
                 }
             });
         }
@@ -109,20 +121,38 @@
         }
 
         function sendCommand(command) {
-            console.log(command)
             $.ajax({
                 url: '{{ route('console.execute') }}',
                 type: "POST",
                 data: {
                     "_token": "{{ csrf_token() }}",
+                    'path': sessionStorage.getItem(keyCurrentFolder),
                     command
                 },
                 success:function(response){
                     if (command.split(' ')[command.split(' ').length - 1]=== 'ls') {
                         getLs(sessionStorage.getItem(keyCurrentFolder))
+                    } else if (consoleStr.val().includes('cd ') && !consoleStr.val().includes('..')) {
+                        if (response.error) {
+                            info.css('color', 'red').append($(`<div>${response.message}</div>`))
+                        } else {
+                            let newpath = consoleStr.val().split(' ')[1]
+                            if (newpath.split('/').length > 1) {
+                                sessionStorage.setItem(keyLevelFolder, +sessionStorage.getItem(keyLevelFolder) - newpath.split('/').length)
+                            } else {
+                                sessionStorage.setItem(keyLevelFolder, +sessionStorage.getItem(keyLevelFolder) - 1)
+                            }
+                            changeLabel(sessionStorage.getItem(keyCurrentFolder) + '/' + newpath)
+                            sessionStorage.setItem(keyCurrentFolder, sessionStorage.getItem(keyCurrentFolder) + '/' + newpath)
+                            sessionStorage.setItem(keyCurrentComand, sessionStorage.getItem(keyCurrentComand) ? sessionStorage.getItem(keyCurrentComand) : `cd ${newpath} && `)
+
+                            setLocalStorage(consoleStr.val())
+                        }
                     } else {
                         info.css('color', 'greenyellow').append($(`<div>${response}</div>`))
                     }
+
+                    consoleStr.val('')
                 },
                 error: function (error) {
                     info.css('color', 'red').append($(`<div>${error}</div>`))
@@ -210,31 +240,3 @@
 
     </script>
 @stop
-
-
-<style>
-    .header__block {
-        width: 80rem;
-    }
-    .header__console {
-        color: greenyellow;
-        position: relative;
-    }
-
-    .header__label {
-        position: absolute;
-        left: .5rem;
-        bottom: 2.3rem;
-    }
-
-    .header__info {
-        height: 20rem;
-        background: black;
-    }
-
-    #console {
-        min-width: 100%;
-        background: black;
-        color: greenyellow;
-    }
-</style>
