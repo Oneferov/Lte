@@ -21,6 +21,21 @@ class FileService
         return $result;
     }
 
+    public function getFilesCurrentFolder(string $path)
+    {
+        $all_files = scandir($path);
+        $result = [];
+        $result['files'] = [];
+        $result['folders'] = [];
+        foreach ($all_files as $item) {
+            if ($item == '.' || $item === '..' || $item === '.git') continue;
+            $title = is_file($path."/$item") ? 'files' : 'folders';
+            $result[$title][] = $item;
+        }
+
+        return $result;
+    }
+
     public function getContentFile(string $path)
     {
         return file_get_contents(base_path().$path, true);

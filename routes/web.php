@@ -30,6 +30,7 @@ Route::controller(FileController::class)->group(function () {
 });
 
 Route::controller(ConsoleController::class)->group(function () {
+    Route::post('console/ls', 'getLs')->name('console.ls');
     Route::post('console/execute', 'execute')->name('console.execute');
 });
 

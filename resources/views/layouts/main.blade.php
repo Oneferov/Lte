@@ -19,7 +19,8 @@
               maxNumKey = 'maxNum',
               keyCurrentFolder = 'currentFolder',
               keyCurrentComand = 'currentComand',
-              keyLevelFolder = 'levelFolder'
+              keyLevelFolder = 'levelFolder',
+              info = $('.header__info')
 
         $(function() {
             changeLabel(sessionStorage.getItem(keyCurrentFolder) ?? changeOutputFolder())
@@ -38,6 +39,7 @@
                     }
 
                     if ($(this).val().includes('cd ') && !$(this).val().includes('..')) {
+
                         let newpath = $(this).val().split(' ')[1]
                         if (newpath.split('/').length > 1) {
                             sessionStorage.setItem(keyLevelFolder, +sessionStorage.getItem(keyLevelFolder) - newpath.split('/').length)
@@ -46,12 +48,13 @@
                         }
                         changeLabel(sessionStorage.getItem(keyCurrentFolder) + '/' + newpath)
                         sessionStorage.setItem(keyCurrentFolder, sessionStorage.getItem(keyCurrentFolder) + '/' + newpath)
-                        sessionStorage.setItem(keyCurrentComand, sessionStorage.getItem(keyCurrentComand) ? sessionStorage.getItem(keyCurrentComand) + `cd ${newpath} && ` : `cd ${newpath} && `)
+                        sessionStorage.setItem(keyCurrentComand, sessionStorage.getItem(keyCurrentComand) ? sessionStorage.getItem(keyCurrentComand) : `cd ${newpath} && `)
                     }
+                    
+                        setLocalStorage($(this).val())
 
-                    setLocalStorage($(this).val())
-                    sendCommand(sessionStorage.getItem(keyCurrentComand) ? sessionStorage.getItem(keyCurrentComand) + $(this).val() : $(this).val())
-                    $(this).val('')
+                        sendCommand(sessionStorage.getItem(keyCurrentComand) ? sessionStorage.getItem(keyCurrentComand) + $(this).val() : $(this).val())
+                        $(this).val('')
                 }
 
                 if (localStorage.getItem(maxNumKey)) {
@@ -76,6 +79,23 @@
             });
         });
 
+        function getLs(path) {
+            $.ajax({
+                url: '{{ route('console.ls') }}',
+                type: "POST",
+                data: {
+                    "_token": "{{ csrf_token() }}",
+                    path
+                },
+                success:function(response){
+                    changeInfoWithLs(response)
+                },
+                error: function (error) {
+
+                }
+            });
+        }
+
         function setLocalStorage(command) {
             let nextKey = firstNum,
                 nextMaxKey = localStorage.getItem(maxNumKey)
@@ -89,19 +109,20 @@
         }
 
         function sendCommand(command) {
-            let info = $('.header__info')
+            console.log(command)
             $.ajax({
                 url: '{{ route('console.execute') }}',
-                type:"POST",
-                data:{
+                type: "POST",
+                data: {
                     "_token": "{{ csrf_token() }}",
                     command
                 },
                 success:function(response){
-                    if (!response) {
-                        response = 'Не является папкой'
-                    } 
-                    info.css('color', 'greenyellow').append($(`<div>${response}</div>`))
+                    if (command.split(' ')[command.split(' ').length - 1]=== 'ls') {
+                        getLs(sessionStorage.getItem(keyCurrentFolder))
+                    } else {
+                        info.css('color', 'greenyellow').append($(`<div>${response}</div>`))
+                    }
                 },
                 error: function (error) {
                     info.css('color', 'red').append($(`<div>${error}</div>`))
@@ -111,6 +132,30 @@
 
         function changeLabel(value) {
             $('.header__label').text(value + '/')
+        }
+
+        function changeInfoWithLs(response) {
+            let root = $('<div></div>').css({
+                'display': 'flex',
+                'flexWrap': 'nowrap',
+                'gap': '40px'
+            }),
+                columns = [],
+                column = 1,
+                length = response.folders.length + response.files.length,
+                lengthFolders = response.folders.length
+
+            for (let i = 1; i<=4; i++) {
+                columns.push($(`<div class="column" style="max-width:250px"></div>`));
+            }
+
+            columns = addItemsToColumns(response.folders, columns, '#2f98d4', length)
+            columns = addItemsToColumns(response.files, columns, '#6f6f21', length)
+
+            columns.forEach((value) => {
+                root.append(value)
+            })
+            info.append(root)
         }
 
         function changeOutputFolder() {
@@ -139,6 +184,28 @@
             } else {
                 return str
             }
+        }
+
+        function addItemsToColumns(arr, columns, color, length) {
+            arr.forEach((value, key) => {
+                let resultKey = (color == '#6f6f21') ? key + length - arr.length : key
+                if (resultKey >= length/4*3) {
+                    column = 3
+                } else if (resultKey >= length/4*2) {
+                    column = 2
+                } else if (resultKey >= length/4) {
+                    column = 1
+                } else {
+                    column = 0
+                }
+                let result = (color == '#6f6f21') ? `-${value}` : `+${value}`
+                columns[column].append($(`<div>${result}</div>`).css({
+                    'color': color,
+                    'overflow': 'hidden',
+                    'whiteSpace': 'nowrap'
+                }))
+            });
+            return columns
         }
 
     </script>
